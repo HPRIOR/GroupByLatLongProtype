@@ -12,20 +12,21 @@ for any coordinate x, it's square is given by: round( x - minimum / the size of 
 def main():
     lat_longs = [
         (0, 0),
-        (1, 1),
-        (0,1),
-        (1,0 ),
-        (5,5),
-        (5,4)
+        (0.5, 0.5),
+        (0, 1),
+        (1, 0),
+        (5, 5),
+        (5, 4)
     ]
-    distance = 1
+    distance = 0.5
     normalised_lat_longs = normalise_lat_longs(lat_longs)
 
     grid_info = create_grid_info_dict(normalised_lat_longs, distance)
 
     filled_grid, filled_squares = get_filled_grid_and_filled_squares(create_grid_dict(grid_info), grid_info)
 
-    print(group_by_adjacent_tiles(filled_squares))
+    print(filled_squares)
+    print(group_by_adjacent_tiles(filled_squares, distance))
 
 
 def group_lat_long(lat_longs: [(float, float)], distance: float) -> [[(float, float)]]:
@@ -62,41 +63,23 @@ def get_filled_grid_and_filled_squares(grid: dict, grid_info: dict) -> (dict, se
     return grid, filled_squares
 
 
-def group_by_adjacent_tiles2(filled_squares: set) -> [set]:
-    groups = [set()]
-    nesw = [(0, 1), (1, 0), (-1, 0), (0, -1)]
-
-    for square in filled_squares:
-        for direction in nesw:
-            adjacent_square = tuple(map(lambda x: x[0] + x[1], zip(direction, square)))
-            for group in groups:
-                if adjacent_square in group:  # if this square has a neighbor in the group
-                    group.update(square)
-                    break
-                else:
-                    groups.append({square})
-                    break
-    return groups
-
-
-def group_by_adjacent_tiles(filled_squares: set) -> [set]:
+def group_by_adjacent_tiles(filled_squares: set, distance) -> [set]:
     visited = set()
 
-    def helper(current_square, group=None):
-
-        if group is None:
-            group = set()
-
+    def group(current_square, group_set=None):
+        if group_set is None:
+            group_set = set()
         if current_square not in filled_squares or current_square in visited:
             return None
         visited.add(current_square)
-        nesw = [(0, 1), (1, 0), (-1, 0), (0, -1)]
+        nesw = [(0, distance), (distance, 0), (-distance, 0), (0, -distance)]
         for direction in nesw:
             new_coord = tuple(map(lambda x: x[0] + x[1], zip(direction, current_square)))
-            group.add(current_square)
-            helper(new_coord, group)
-        return group
-    return [helper(square) for square in filled_squares]
+            group_set.add(current_square)
+            group(new_coord, group_set)
+        return group_set
+
+    return [group(square) for square in filled_squares if square not in visited]
 
 
 def create_grid_info_dict(lat_longs: [(float, float)], distance: float):
