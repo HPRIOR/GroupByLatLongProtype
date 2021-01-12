@@ -12,18 +12,22 @@ for any coordinate x, it's square is given by: round( x - minimum / the size of 
 def main():
     lat_longs = [
         (0, 0),
-        (0, 0.5)
+        (0, 1),
+        (2, 2),
+        (2, 3),
+        (2.01, 3.01)
     ]
-    distance = 0.6
+    distance = 2
     normalised_lat_longs = normalise_lat_longs(lat_longs)
-    print(normalised_lat_longs)
-
     grid_info = create_grid_info_dict(normalised_lat_longs, distance)
-
     filled_grid, filled_squares = get_filled_grid_and_filled_squares(create_grid_dict(grid_info), grid_info)
-
     square_groups = group_by_adjacent_tiles(filled_squares, distance)
-    print(square_groups)
+
+    print(f"filled grid:        {filled_grid}")
+    print(f"grid_size =         {max(filled_grid, key=lambda x: x[0] + x[1])}")
+    print(f"filled squares:     {filled_squares}")
+    print(f"adjacent groups:    {square_groups}")
+
 
 
 def group_lat_long(lat_longs: [(float, float)], distance: float) -> [[(float, float)]]:
@@ -34,8 +38,8 @@ def create_grid_dict(grid_info: dict):
     min_long, max_long = grid_info["min_long"], grid_info["max_long"]
     min_lat, max_lat = grid_info["min_lat"], grid_info["max_lat"]
     distance = grid_info["distance"]
-    lats = (math.ceil((max_lat - min_lat) / distance)) + 1
-    longs = (math.ceil((max_long - min_long) / distance)) + 1
+    lats = (math.ceil((max_lat - min_lat) / distance))
+    longs = (math.ceil((max_long - min_long) / distance))
     d = {}
     for i in range(lats):
         for j in range(longs):
